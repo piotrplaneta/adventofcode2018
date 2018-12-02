@@ -76,11 +76,6 @@ func frequencyMap(word string) map[rune]int {
 	return frequencies
 }
 
-func adventInput() []string {
-	lines, _ := utils.ReadLinesFromFile("day2/input")
-	return lines
-}
-
 func similar(combination pair) bool {
 	errors := 0
 
@@ -123,4 +118,9 @@ func generate2ElemCombinations(list []string) <-chan pair {
 	}(c)
 
 	return c
+}
+
+func adventInput() []string {
+	lines, _ := utils.ReadLinesFromFile("day2/input")
+	return lines
 }

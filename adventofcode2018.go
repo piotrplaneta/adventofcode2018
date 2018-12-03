@@ -14,4 +14,5 @@ func main() {
 	fmt.Println(day2.SolvePart1())
 	fmt.Println(day2.SolvePart2())
 	fmt.Println(day3.SolvePart1())
+	fmt.Println(day3.SolvePart2())
 }

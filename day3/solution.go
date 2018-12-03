@@ -21,12 +21,31 @@ func SolvePart1() int {
 	return OverlappingRectanglesArea(adventInput())
 }
 
-//OverlappingRectanglesArea return area of overlapping rectangles
+//SolvePart2 returns the answer for part 2 of day 3
+func SolvePart2() string {
+	return NonOverlappingRectangle(adventInput())
+}
+
+//OverlappingRectanglesArea returns area of overlapping rectangles
 func OverlappingRectanglesArea(input []string) int {
 	rectangles := parseRectangles(input)
 	rectanglesOnArea := areaWithRectangles(rectangles)
 
 	return squaresWithAtLeastNRectangles(rectanglesOnArea, 2)
+}
+
+//NonOverlappingRectangle returns id of nonoverlapping rectangle
+func NonOverlappingRectangle(input []string) string {
+	rectangles := parseRectangles(input)
+	rectanglesOnArea := areaWithRectangles(rectangles)
+
+	for _, rectangle := range rectangles {
+		if onlyOneRectangle(rectangle, rectanglesOnArea) {
+			return rectangle.id
+		}
+	}
+
+	return ""
 }
 
 func parseRectangles(input []string) []rectangle {
@@ -74,6 +93,18 @@ func squaresWithAtLeastNRectangles(rectanglesOnArea area, atLeast int) int {
 	}
 
 	return result
+}
+
+func onlyOneRectangle(rectangle rectangle, rectanglesOnArea area) bool {
+	for x := rectangle.x0; x < rectangle.x1; x++ {
+		for y := rectangle.y0; y < rectangle.y1; y++ {
+			if rectanglesOnArea[oneInchSquare{x0: x, x1: x + 1, y0: y, y1: y + 1}] > 1 {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 func stringToInt(input string) int {

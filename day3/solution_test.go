@@ -9,3 +9,11 @@ func TestOverlappingRectanglesArea(t *testing.T) {
 		t.Errorf("Area was incorrect, got: %d, want: %d.", area, 4)
 	}
 }
+
+func TestNonOverlappingRectangle(t *testing.T) {
+	input := []string{"#1 @ 1,3: 4x4", "#2 @ 3,1: 4x4", "#3 @ 5,5: 2x2"}
+	rectangleID := NonOverlappingRectangle(input)
+	if rectangleID != "#3" {
+		t.Errorf("Id was incorrect, got: %s, want: %s.", rectangleID, "#3")
+	}
+}

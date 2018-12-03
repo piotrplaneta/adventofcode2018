@@ -9,7 +9,7 @@ import (
 func ReadLinesFromFile(path string) ([]string, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 	defer file.Close()
 

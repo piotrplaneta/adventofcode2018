@@ -9,6 +9,7 @@ import (
 	"github.com/piotrplaneta/adventofcode2018/day4"
 	"github.com/piotrplaneta/adventofcode2018/day5"
 	"github.com/piotrplaneta/adventofcode2018/day6"
+	"github.com/piotrplaneta/adventofcode2018/day7"
 )
 
 func main() {
@@ -24,4 +25,6 @@ func main() {
 	fmt.Println(day5.SolvePart2())
 	fmt.Println(day6.SolvePart1())
 	fmt.Println(day6.SolvePart2())
+	fmt.Println(day7.SolvePart1())
+	fmt.Println(day7.SolvePart2())
 }

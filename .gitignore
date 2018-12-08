@@ -1,1 +1,13 @@
 adventofcode2018.exe
+*/_build/
+*/cover/
+*/deps/
+*/doc/
+*/.fetch
+*/erl_crash.dump
+*/.elixir_ls/
+*/.gitignore
+*/README.md
+*/.formatter.exs
+*/mix.exs
+*/config/

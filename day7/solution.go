@@ -16,39 +16,20 @@ func SolvePart2() int {
 
 //SortTopologically returns node names sorted topologically
 func SortTopologically(input []string) string {
-	edges := parseEdges(input)
-	graph := utils.MakeGraph(26)
-
-	for _, e := range edges {
-		graph.AddEdge(e.U, e.V)
-	}
+	edges := ParseEdges(input)
+	graph := MakeGraph(26)
+	graph.AddEdges(edges)
 
 	return graph.SortTopologically()
 }
 
 //TimedSortTopologically returns time to sort topologically
 func TimedSortTopologically(input []string, workerCount int) int {
-	edges := parseEdges(input)
-	graph := utils.MakeGraph(26)
-
-	for _, e := range edges {
-		graph.AddEdge(e.U, e.V)
-	}
+	edges := ParseEdges(input)
+	graph := MakeGraph(26)
+	graph.AddEdges(edges)
 
 	return graph.TimedSortTopologically(workerCount)
-}
-
-func parseEdges(input []string) []utils.Edge {
-	edges := make([]utils.Edge, len(input))
-
-	for i, v := range input {
-		u := string(v[5])
-		v := string(v[36])
-
-		edges[i] = utils.Edge{U: u, V: v}
-	}
-
-	return edges
 }
 
 func adventInput() []string {

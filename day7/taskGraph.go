@@ -1,12 +1,12 @@
-package utils
+package day7
 
 import (
 	"sort"
 )
 
-//Edge represents edge of string Graph
+//Edge represents Edgeof string Graph
 type Edge struct {
-	U, V string
+	u, v string
 }
 
 //Graph represents string Graph
@@ -14,6 +14,20 @@ type Graph struct {
 	n             int
 	edges         map[string][]string
 	reversedEdges map[string][]string
+}
+
+//ParseEdges returns edges from []string
+func ParseEdges(input []string) []Edge {
+	edges := make([]Edge, len(input))
+
+	for i, v := range input {
+		u := string(v[5])
+		v := string(v[36])
+
+		edges[i] = Edge{u: u, v: v}
+	}
+
+	return edges
 }
 
 //MakeGraph returns a new graph
@@ -25,10 +39,17 @@ func MakeGraph(n int) *Graph {
 	}
 }
 
+//AddEdges adds all edges from the slice
+func (g *Graph) AddEdges(edges []Edge) {
+	for _, e := range edges {
+		g.AddEdge(e)
+	}
+}
+
 //AddEdge adds a new edge
-func (g *Graph) AddEdge(u, v string) {
-	g.edges[u] = append(g.edges[u], v)
-	g.reversedEdges[v] = append(g.reversedEdges[v], u)
+func (g *Graph) AddEdge(e Edge) {
+	g.edges[e.u] = append(g.edges[e.u], e.v)
+	g.reversedEdges[e.v] = append(g.reversedEdges[e.v], e.u)
 }
 
 //RemoveEdgesComingFromAndReturnNewStartNodes used in topo sort

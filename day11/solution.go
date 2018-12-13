@@ -95,7 +95,8 @@ func calculatePower(x, y, serialNumber int) int {
 
 func calculateSum(i, j, squareSize int, prefixSums [][]int) int {
 	if i > 0 && j > 0 {
-		return prefixSums[i+squareSize][j+squareSize] - prefixSums[i][j+squareSize] - prefixSums[i+squareSize][j] + prefixSums[i][j]
+		return prefixSums[i+squareSize][j+squareSize] - prefixSums[i][j+squareSize] -
+			prefixSums[i+squareSize][j] + prefixSums[i][j]
 	} else if i > 0 {
 		return prefixSums[i+squareSize][j+squareSize] - prefixSums[i][j+squareSize]
 	} else if j > 0 {

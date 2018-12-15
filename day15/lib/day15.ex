@@ -1,50 +1,62 @@
 defmodule Day15 do
   defmodule Elf do
-    defstruct position: {-1, -1}, type: :elf, health: 300
+    defstruct position: {-1, -1}, initial_position: {-1, -1}, type: :elf, health: 200
   end
 
   defmodule Gremlin do
-    defstruct position: {-1, -1}, type: :gremlin, health: 300
+    defstruct position: {-1, -1}, initial_position: {-1, -1}, type: :gremlin, health: 200
   end
 
   defmodule Wall do
-    defstruct position: {-1, -1}, type: :wall
+    defstruct position: {-1, -1}, initial_position: {-1, -1}, type: :wall
   end
 
   defmodule EmptySpace do
-    defstruct position: {-1, -1}, type: :empty_space
+    defstruct position: {-1, -1}, initial_position: {-1, -1}, type: :empty_space
   end
 
-  defmodule PathToObject do
-    defstruct object: nil, length: -1, steps: []
+  def goblins_score(game_state, iteration \\ 0) do
+    state_after_movement = tick(game_state)
+
+    if length(elfs(players(state_after_movement))) == 0 do
+      health_sum =
+        Enum.map(gremlins(players(state_after_movement)), & &1.health)
+        |> Enum.sum()
+
+      health_sum * (iteration + 1)
+    else
+      goblins_score(state_after_movement, iteration + 1)
+    end
   end
 
-  def movement_tick({elfs, gremlins, game_state}) do
-    players = elfs ++ gremlins
+  def tick(game_state) do
+    players = players(game_state)
     sorted_players = Enum.sort_by(players, &{elem(&1.position, 1), elem(&1.position, 0)})
 
-    {new_players, _, new_game_state} =
-      sorted_players
-      |> Enum.reduce({[], sorted_players, game_state}, fn player,
-                                                          {moved_players, old_players,
-                                                           current_game_state} ->
-        {moved_player, new_game_state} =
+    Enum.reduce(sorted_players, game_state, fn player, current_game_state ->
+      if !Enum.any?(
+           players(current_game_state),
+           &(&1.initial_position == player.initial_position)
+         ) do
+        current_game_state
+      else
+        {new_player, game_state_after_move} =
           if player.type == :elf do
-            move(player, gremlins(moved_players ++ old_players), current_game_state)
+            move(player, gremlins(players(current_game_state)), current_game_state)
           else
-            move(player, elfs(moved_players ++ old_players), current_game_state)
+            move(player, elfs(players(current_game_state)), current_game_state)
           end
 
-        {moved_players ++ [moved_player], Enum.drop(old_players, 1), new_game_state}
-      end)
-
-    {elfs(new_players), gremlins(new_players), new_game_state}
+        attack(new_player, game_state_after_move)
+      end
+    end)
   end
 
   defp move(player, enemies, game_state) do
     closest_enemy_path = calculate_closest_enemy_path(player, enemies, game_state)
 
-    if closest_enemy_path == [] do
+    if closest_enemy_path == [] || closest_enemy_path == nil ||
+         length(find_adjacent_enemies(player, game_state)) > 0 do
       {player, game_state}
     else
       selected_move =
@@ -71,9 +83,17 @@ defmodule Day15 do
 
       new_player =
         if player.type == :elf do
-          %Elf{position: new_coordinates, health: player.health}
+          %Elf{
+            position: new_coordinates,
+            initial_position: player.initial_position,
+            health: player.health
+          }
         else
-          %Gremlin{position: new_coordinates, health: player.health}
+          %Gremlin{
+            position: new_coordinates,
+            initial_position: player.initial_position,
+            health: player.health
+          }
         end
 
       new_game_state =
@@ -85,13 +105,59 @@ defmodule Day15 do
     end
   end
 
+  defp attack(player, game_state) do
+    eligible_enemies = find_adjacent_enemies(player, game_state)
+
+    new_game_state =
+      if length(eligible_enemies) > 0 do
+        selected_enemy = Enum.min_by(eligible_enemies, & &1.health)
+
+        case selected_enemy.health < 4 do
+          true ->
+            Map.put(game_state, selected_enemy.position, %EmptySpace{
+              position: selected_enemy.position
+            })
+
+          false ->
+            Map.put(game_state, selected_enemy.position, %{
+              selected_enemy
+              | health: selected_enemy.health - 3
+            })
+        end
+      else
+        game_state
+      end
+
+    new_game_state
+  end
+
+  defp find_adjacent_enemies(elf = %Elf{}, game_state) do
+    Enum.map([{0, -1}, {-1, 0}, {1, 0}, {0, 1}], fn move ->
+      new_coordinates =
+        {elem(elf.position, 0) + elem(move, 0), elem(elf.position, 1) + elem(move, 1)}
+
+      game_state[new_coordinates]
+    end)
+    |> Enum.filter(&(&1.type == :gremlin))
+  end
+
+  defp find_adjacent_enemies(gremlin = %Gremlin{}, game_state) do
+    Enum.map([{0, -1}, {-1, 0}, {1, 0}, {0, 1}], fn move ->
+      new_coordinates =
+        {elem(gremlin.position, 0) + elem(move, 0), elem(gremlin.position, 1) + elem(move, 1)}
+
+      game_state[new_coordinates]
+    end)
+    |> Enum.filter(&(&1.type == :elf))
+  end
+
   defp calculate_closest_enemy_path(player, enemies, game_state) do
     destination_points =
       Enum.flat_map(enemies, fn enemy -> empty_adjacent_points(enemy, game_state) end)
 
     paths = Enum.map(destination_points, fn point -> shortest_path(player, point, game_state) end)
 
-    Enum.filter(paths, fn path -> path != [] end)
+    Enum.filter(paths, &(length(&1) > 1))
     |> Enum.map(fn path -> Enum.drop(path, 1) end)
     |> Enum.sort_by(&{length(&1), elem(Enum.at(&1, 0), 1), elem(Enum.at(&1, 0), 0)})
     |> Enum.at(0)
@@ -179,10 +245,17 @@ defmodule Day15 do
     {elfs(Map.values(game_state)), gremlins(Map.values(game_state)), game_state}
   end
 
-  defp parse_object("#", x, y), do: %Wall{position: {x, y}}
-  defp parse_object(".", x, y), do: %EmptySpace{position: {x, y}}
-  defp parse_object("E", x, y), do: %Elf{position: {x, y}}
-  defp parse_object("G", x, y), do: %Gremlin{position: {x, y}}
+  defp parse_object("#", x, y), do: %Wall{position: {x, y}, initial_position: {x, y}}
+  defp parse_object(".", x, y), do: %EmptySpace{position: {x, y}, initial_position: {x, y}}
+  defp parse_object("E", x, y), do: %Elf{position: {x, y}, initial_position: {x, y}}
+  defp parse_object("G", x, y), do: %Gremlin{position: {x, y}, initial_position: {x, y}}
+
+  defp players(game_state) do
+    Map.values(game_state)
+    |> Enum.filter(fn object ->
+      object.type == :elf || object.type == :gremlin
+    end)
+  end
 
   defp elfs(list) do
     Enum.filter(list, fn object ->

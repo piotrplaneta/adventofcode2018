@@ -1,10 +1,19 @@
 defmodule Day15 do
   defmodule Elf do
-    defstruct position: {-1, -1}, initial_position: {-1, -1}, type: :elf, health: 200
+    defstruct position: {-1, -1},
+              initial_position: {-1, -1},
+              type: :elf,
+              health: 200,
+              # 34 found manually for part2
+              attack_value: 3
   end
 
   defmodule Gremlin do
-    defstruct position: {-1, -1}, initial_position: {-1, -1}, type: :gremlin, health: 200
+    defstruct position: {-1, -1},
+              initial_position: {-1, -1},
+              type: :gremlin,
+              health: 200,
+              attack_value: 3
   end
 
   defmodule Wall do
@@ -15,17 +24,26 @@ defmodule Day15 do
     defstruct position: {-1, -1}, initial_position: {-1, -1}, type: :empty_space
   end
 
-  def goblins_score(game_state, iteration \\ 0) do
+  def winning_score(game_state, iteration \\ 0) do
     state_after_movement = tick(game_state)
 
-    if length(elfs(players(state_after_movement))) == 0 do
-      health_sum =
-        Enum.map(gremlins(players(state_after_movement)), & &1.health)
-        |> Enum.sum()
+    cond do
+      length(elfs(players(state_after_movement))) == 0 ->
+        health_sum =
+          Enum.map(gremlins(players(state_after_movement)), & &1.health)
+          |> Enum.sum()
 
-      health_sum * (iteration + 1)
-    else
-      goblins_score(state_after_movement, iteration + 1)
+        {:gremlins, health_sum * (iteration + 1)}
+
+      length(gremlins(players(state_after_movement))) == 0 ->
+        health_sum =
+          Enum.map(elfs(players(state_after_movement)), & &1.health)
+          |> Enum.sum()
+
+        {:elfs, health_sum * (iteration + 1)}
+
+      true ->
+        winning_score(state_after_movement, iteration + 1)
     end
   end
 
@@ -112,7 +130,7 @@ defmodule Day15 do
       if length(eligible_enemies) > 0 do
         selected_enemy = Enum.min_by(eligible_enemies, & &1.health)
 
-        case selected_enemy.health < 4 do
+        case selected_enemy.health <= player.attack_value do
           true ->
             Map.put(game_state, selected_enemy.position, %EmptySpace{
               position: selected_enemy.position
@@ -121,7 +139,7 @@ defmodule Day15 do
           false ->
             Map.put(game_state, selected_enemy.position, %{
               selected_enemy
-              | health: selected_enemy.health - 3
+              | health: selected_enemy.health - player.attack_value
             })
         end
       else

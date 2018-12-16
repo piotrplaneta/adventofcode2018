@@ -25,7 +25,7 @@ defmodule Day15Test do
 
   test "goblins score" do
     {_, _, initial_state} = Day15.parse_input(tick_test_input())
-    score = Day15.goblins_score(initial_state)
+    {:gremlins, score} = Day15.winning_score(initial_state)
 
     assert score == 27730
   end

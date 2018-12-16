@@ -33,14 +33,14 @@ defmodule Day15 do
           Enum.map(gremlins(players(state_after_movement)), & &1.health)
           |> Enum.sum()
 
-        {:gremlins, health_sum * (iteration + 1)}
+        {:gremlins, health_sum * iteration}
 
       length(gremlins(players(state_after_movement))) == 0 ->
         health_sum =
           Enum.map(elfs(players(state_after_movement)), & &1.health)
           |> Enum.sum()
 
-        {:elfs, health_sum * (iteration + 1)}
+        {:elfs, health_sum * iteration}
 
       true ->
         winning_score(state_after_movement, iteration + 1)

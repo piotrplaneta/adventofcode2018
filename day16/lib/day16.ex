@@ -1,15 +1,25 @@
 defmodule Day16 do
   use Bitwise
 
-  @moduledoc """
-  Solution for Day16.
-  """
-
-  @doc """
-  Returns amount of exammples that 3 or more ops satisfy
-  """
   def behave_like_three_or_more(input) do
-    parse_input(input) |> Enum.filter(& matching_ops(&1) >= 3) |> length()
+    parse_matching_input(input) |> Enum.filter(& matching_ops(&1) >= 3) |> length()
+  end
+
+  def match_operations(input) do
+    matching_operations = parse_matching_input(input)
+    |> Enum.flat_map(fn {r_in, r_out, op} ->
+      Enum.with_index(ops())
+      |> Enum.filter(& elem(&1, 0).(r_in, op) == r_out)
+      |> Enum.map(&{op_number(op), elem(&1, 1)})
+    end)
+    |> Enum.group_by(& elem(&1, 0), & elem(&1, 1))
+    |> Enum.map(fn {k, v} -> {k, Enum.uniq(v)} end)
+    |> Enum.into(%{})
+
+    match_one_to_one(matching_operations, [])
+  end
+
+  defp match_one_to_one(possible_matches, already_matched) when length(already_matched) == 16 do
   end
 
   @doc """
@@ -27,7 +37,7 @@ defmodule Day16 do
     |> length()
   end
 
-  defp parse_input(input) do
+  defp parse_matching_input(input) do
     String.split(input, "\n")
     |> Enum.chunk_every(4)
     |> Enum.map(fn [r_in | [op | [r_out | [_]]]] ->
@@ -125,6 +135,7 @@ defmodule Day16 do
     ]
   end
 
+  defp op_number(op), do: elem(op, 0)
   defp first_arg(op), do: elem(op, 1)
   defp second_arg(op), do: elem(op, 2)
   defp destination(op), do: elem(op, 3)
